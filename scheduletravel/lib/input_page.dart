@@ -1,19 +1,6 @@
 import 'package:flutter/material.dart';
 import 'output_page.dart';
 
-void main() {
-  runApp(MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      home: HomePage(),
-    );
-  }
-}
-
 class HomePage extends StatelessWidget {
   final TextEditingController textController1 = TextEditingController();
   final TextEditingController textController2 = TextEditingController();

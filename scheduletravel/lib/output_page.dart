@@ -93,25 +93,49 @@ class _OutputPageState extends State<OutputPage> {
               ],
             ),
             Text("위는 " + text1 + "의 유명한 명소들의 사진입니다.", style: TextStyle(fontSize: 13)),
-            ListView.builder(
-              shrinkWrap: true,
-              physics: NeverScrollableScrollPhysics(),
-              itemCount: data.length,
-              itemBuilder: (context, index) {
-                final String date = data[index]['date'] ?? 'No Date';
-                final String time = data[index]['time'] ?? 'No Time';
-                final String plan = data[index]['plan'] ?? 'No Plan';
-
-                return ListTile(
-                  title: Text('$date $time: $plan'),
-                );
-              },
-            ),
+            buildPlanList(),
           ],
         ),
       ),
     );
   }
-}
 
+  Widget buildPlanList() {
+    Map<String, List<String>> groupedPlans = {};
+
+    // 날짜를 기준으로 계획을 그룹화
+    data.forEach((item) {
+      final String date = item['date'] ?? 'No Date';
+      final String time = item['time'] ?? 'No Time';
+      final String plan = item['plan'] ?? 'No Plan';
+      final String theme = item['theme'] ?? 'No Theme';
+
+      final String groupKey = '$date: $theme';
+      final String planText = '$time: $plan';
+
+      if (groupedPlans.containsKey(groupKey)) {
+        groupedPlans[groupKey]!.add(planText);
+      } else {
+        groupedPlans[groupKey] = [planText];
+      }
+    });
+
+    // 그룹화된 계획을 출력
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start, // 여기를 CrossAxisAlignment.start로 변경
+      children: groupedPlans.entries.map((entry) {
+        final String groupKey = entry.key;
+        final List<String> plans = entry.value;
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Text('$groupKey', style: TextStyle(fontWeight: FontWeight.bold)),
+            ...plans.map((plan) => Text('  $plan')),
+          ],
+        );
+      }).toList(),
+    );
+  }
+}
 

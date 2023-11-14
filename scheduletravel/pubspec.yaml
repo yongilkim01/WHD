@@ -65,6 +65,7 @@ flutter:
     - assets/sight2.jpeg
     - assets/sight3.jpeg
     - assets/sight4.jpeg
+    - assets/logo.png
     - assets/data.json
 
   # An image asset can refer to one or more resolution-specific "variants", see
