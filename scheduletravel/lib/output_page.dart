@@ -1,3 +1,6 @@
+// ignore_for_file: library_private_types_in_public_api, no_logic_in_create_state
+
+import 'dart:math';
 import 'dart:convert';
 import 'dart:async';
 import 'package:flutter/material.dart';
@@ -27,6 +30,7 @@ class OutputPage extends StatefulWidget {
 class _OutputPageState extends State<OutputPage> {
   final String text1, text2, text3, text4;
   List<Map<String, dynamic>> data = [];
+  Random random = Random();
 
   _OutputPageState({
     required this.text1,
@@ -68,7 +72,7 @@ class _OutputPageState extends State<OutputPage> {
                 ),
               ),
               const TextSpan(
-                text: ' 에 대해 추천해드릴게요!',
+                text: '에 대해 추천해드릴게요!',
                 style: TextStyle(fontSize: 18),
               )
             ],
@@ -83,10 +87,10 @@ class _OutputPageState extends State<OutputPage> {
         child: Column(
           children: <Widget>[
             FutureBuilder<List<String>>(
-              future: getImageUrls(text1 + "관광명소"),
+              future: getImageUrls("$text1 관광명소"),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
-                  return CircularProgressIndicator();
+                  return const CircularProgressIndicator();
                 } else if (snapshot.hasError) {
                   return Text('$text1에 대한 이미지 로딩 중 오류 발생: ${snapshot.error}');
                 } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
@@ -100,19 +104,19 @@ class _OutputPageState extends State<OutputPage> {
                       childAspectRatio: 1.6,
                     ),
                     shrinkWrap: true,
-                    itemCount: imageUrls.length,
+                    itemCount: min(imageUrls.length, 4),
                     itemBuilder: (context, index) {
                       return CachedNetworkImage(
                         imageUrl: imageUrls[index],
                         placeholder: (context, url) => const CircularProgressIndicator(),
-                        errorWidget: (context, url, error) => Icon(Icons.error),
+                        errorWidget: (context, url, error) => const Icon(Icons.warning),
                       );
                     },
                   );
                 }
               },
             ),
-            Text("위는 $text1의 유명한 명소들의 사진입니다.", style: TextStyle(fontSize: 13)),
+            Text("위는 $text1의 유명한 명소들의 사진입니다.", style: const TextStyle(fontSize: 13)),
             buildPlanList(),
           ],
         ),
@@ -121,19 +125,37 @@ class _OutputPageState extends State<OutputPage> {
   }
 
   Future<List<String>> getImageUrls(String query) async {
-    final String apiKey = 'AIzaSyBW2byc3ChYykgo61BH8TFbuao56TyNPBs'; // Google Cloud Console에서 발급받은 API 키로 교체
-    final String cx = 'a378f93229fc3407b'; // Google Custom Search Engine에서 만든 엔진의 cx 값으로 교체
-    final String endpoint = 'https://www.googleapis.com/customsearch/v1?q=$query&cx=$cx&key=$apiKey&searchType=image&num=6';
+    const String apiKey = 'AIzaSyBW2byc3ChYykgo61BH8TFbuao56TyNPBs';
+    const String cx = 'a378f93229fc3407b';
+    final String endpoint = 'https://www.googleapis.com/customsearch/v1?q=$query&cx=$cx&key=$apiKey&searchType=image&num=10';
 
     try {
       final response = await http.get(Uri.parse(endpoint));
       final Map<String, dynamic> jsonResponse = json.decode(response.body);
       final List<dynamic> items = jsonResponse['items'];
 
-      return List<String>.from(items.map((item) => item['link']));
+      List<String> validImageUrls = [];
+
+      for (var item in items) {
+        final String imageUrl = item['link'];
+        if (await _isValidImageUrl(imageUrl)) {
+          validImageUrls.add(imageUrl);
+        }
+      }
+
+      return validImageUrls;
     } catch (e) {
       print('이미지 로딩 중 오류 발생: $e');
       return [];
+    }
+  }
+
+  Future<bool> _isValidImageUrl(String imageUrl) async {
+    try {
+      final response = await http.head(Uri.parse(imageUrl));
+      return response.statusCode == 200;
+    } catch (e) {
+      return false;
     }
   }
 
@@ -165,7 +187,7 @@ class _OutputPageState extends State<OutputPage> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            Text('$groupKey', style: TextStyle(fontWeight: FontWeight.bold)),
+            Text(groupKey, style: TextStyle(fontWeight: FontWeight.bold)),
             ...plans.map((plan) => Text('  $plan')),
           ],
         );
