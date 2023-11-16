@@ -2,6 +2,8 @@ import 'dart:convert';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
+import 'package:http/http.dart' as http;
+import 'package:cached_network_image/cached_network_image.dart';
 
 class OutputPage extends StatefulWidget {
   final String text1, text2, text3, text4;
@@ -40,8 +42,7 @@ class _OutputPageState extends State<OutputPage> {
   }
 
   Future<void> loadJsonData() async {
-    final String jsonString =
-    await rootBundle.loadString('assets/data.json');
+    final String jsonString = await rootBundle.loadString('assets/data.json');
     final List<dynamic> jsonList = json.decode(jsonString);
 
     setState(() {
@@ -81,18 +82,37 @@ class _OutputPageState extends State<OutputPage> {
       body: SingleChildScrollView(
         child: Column(
           children: <Widget>[
-            GridView.count(
-              crossAxisCount: 2,
-              shrinkWrap: true,
-              childAspectRatio: 1.6,
-              children: <Widget>[
-                Image.asset('assets/sight1.jpeg'),
-                Image.asset('assets/sight2.jpeg'),
-                Image.asset('assets/sight3.jpeg'),
-                Image.asset('assets/sight4.jpeg'),
-              ],
+            FutureBuilder<List<String>>(
+              future: getImageUrls(text1 + "관광명소"),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return CircularProgressIndicator();
+                } else if (snapshot.hasError) {
+                  return Text('$text1에 대한 이미지 로딩 중 오류 발생: ${snapshot.error}');
+                } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                  return Text('$text1에 대한 이미지가 없습니다.');
+                } else {
+                  List<String> imageUrls = snapshot.data!;
+
+                  return GridView.builder(
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      childAspectRatio: 1.6,
+                    ),
+                    shrinkWrap: true,
+                    itemCount: imageUrls.length,
+                    itemBuilder: (context, index) {
+                      return CachedNetworkImage(
+                        imageUrl: imageUrls[index],
+                        placeholder: (context, url) => const CircularProgressIndicator(),
+                        errorWidget: (context, url, error) => Icon(Icons.error),
+                      );
+                    },
+                  );
+                }
+              },
             ),
-            Text("위는 " + text1 + "의 유명한 명소들의 사진입니다.", style: TextStyle(fontSize: 13)),
+            Text("위는 $text1의 유명한 명소들의 사진입니다.", style: TextStyle(fontSize: 13)),
             buildPlanList(),
           ],
         ),
@@ -100,10 +120,26 @@ class _OutputPageState extends State<OutputPage> {
     );
   }
 
+  Future<List<String>> getImageUrls(String query) async {
+    final String apiKey = 'AIzaSyBW2byc3ChYykgo61BH8TFbuao56TyNPBs'; // Google Cloud Console에서 발급받은 API 키로 교체
+    final String cx = 'a378f93229fc3407b'; // Google Custom Search Engine에서 만든 엔진의 cx 값으로 교체
+    final String endpoint = 'https://www.googleapis.com/customsearch/v1?q=$query&cx=$cx&key=$apiKey&searchType=image&num=6';
+
+    try {
+      final response = await http.get(Uri.parse(endpoint));
+      final Map<String, dynamic> jsonResponse = json.decode(response.body);
+      final List<dynamic> items = jsonResponse['items'];
+
+      return List<String>.from(items.map((item) => item['link']));
+    } catch (e) {
+      print('이미지 로딩 중 오류 발생: $e');
+      return [];
+    }
+  }
+
   Widget buildPlanList() {
     Map<String, List<String>> groupedPlans = {};
 
-    // 날짜를 기준으로 계획을 그룹화
     data.forEach((item) {
       final String date = item['date'] ?? 'No Date';
       final String time = item['time'] ?? 'No Time';
@@ -120,9 +156,8 @@ class _OutputPageState extends State<OutputPage> {
       }
     });
 
-    // 그룹화된 계획을 출력
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start, // 여기를 CrossAxisAlignment.start로 변경
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: groupedPlans.entries.map((entry) {
         final String groupKey = entry.key;
         final List<String> plans = entry.value;
@@ -138,4 +173,3 @@ class _OutputPageState extends State<OutputPage> {
     );
   }
 }
-
