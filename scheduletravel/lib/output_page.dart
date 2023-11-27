@@ -9,16 +9,17 @@ import 'package:http/http.dart' as http;
 import 'package:cached_network_image/cached_network_image.dart';
 
 class OutputPage extends StatefulWidget {
-  final String text1, text2, text3, text4;
+  final String text1, text2, text3;
   final double costSliderValue;
   final double prioritySliderValue;
   final double foodSliderValue;
+  final int selectedMaxPlaces;
 
   const OutputPage({super.key,
     required this.text1,
     required this.text2,
     required this.text3,
-    required this.text4,
+    required this.selectedMaxPlaces,
     required this.costSliderValue,
     required this.prioritySliderValue,
     required this.foodSliderValue,
@@ -29,7 +30,7 @@ class OutputPage extends StatefulWidget {
     text1: text1,
     text2: text2,
     text3: text3,
-    text4: text4,
+    selectedMaxPlaces: selectedMaxPlaces,
     costSliderValue: costSliderValue,
     prioritySliderValue: prioritySliderValue,
     foodSliderValue: foodSliderValue,
@@ -37,10 +38,10 @@ class OutputPage extends StatefulWidget {
 }
 
 class _OutputPageState extends State<OutputPage> {
-  final String text1, text2, text3, text4;
+  final String text1, text2, text3;
   List<Map<String, dynamic>> data = [];
   Random random = Random();
-
+  int selectedMaxPlaces;
   double costSliderValue;
   double prioritySliderValue;
   double foodSliderValue;
@@ -49,15 +50,15 @@ class _OutputPageState extends State<OutputPage> {
     required this.text1,
     required this.text2,
     required this.text3,
-    required this.text4,
+    required this.selectedMaxPlaces,
     required this.costSliderValue,
     required this.prioritySliderValue,
     required this.foodSliderValue,
   }) : super() {
     // 필드 초기화를 생성자에서 수행
-    this.costSliderValue = costSliderValue;
-    this.prioritySliderValue = prioritySliderValue;
-    this.foodSliderValue = foodSliderValue;
+    costSliderValue = costSliderValue;
+    prioritySliderValue = prioritySliderValue;
+    foodSliderValue = foodSliderValue;
   }
 
   @override
@@ -127,10 +128,23 @@ class _OutputPageState extends State<OutputPage> {
                     shrinkWrap: true,
                     itemCount: min(imageUrls.length, 4),
                     itemBuilder: (context, index) {
-                      return CachedNetworkImage(
-                        imageUrl: imageUrls[index],
-                        placeholder: (context, url) => const CircularProgressIndicator(),
-                        errorWidget: (context, url, error) => const Icon(Icons.warning),
+                      return Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(8.0),
+                          child: CachedNetworkImage(
+                            imageUrl: imageUrls[index],
+                            placeholder: (context, url) => Container(
+                              color: Colors.grey[300],
+                              child: const Center(child: CircularProgressIndicator()),
+                            ),
+                            errorWidget: (context, url, error) => Container(
+                              color: Colors.grey[300],
+                              child: const Center(child: Icon(Icons.warning, color: Colors.red)),
+                            ),
+                            fit: BoxFit.cover,
+                          ),
+                        ),
                       );
                     },
                   );
@@ -138,6 +152,7 @@ class _OutputPageState extends State<OutputPage> {
               },
             ),
             Text("위는 $text1의 유명한 명소들의 사진입니다.", style: const TextStyle(fontSize: 13)),
+            const SizedBox(height: 8.0,),
             buildPlanList(),
           ],
         ),
