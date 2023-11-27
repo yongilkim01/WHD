@@ -1,7 +1,17 @@
+// ignore_for_file: library_private_types_in_public_api
+
 import 'package:flutter/material.dart';
 import 'output_page.dart';
 
+void main() {
+  runApp(const MaterialApp(
+    home: HomePage(),
+  ));
+}
+
 class HomePage extends StatefulWidget {
+  const HomePage({Key? key}) : super(key: key);
+
   @override
   _HomePageState createState() => _HomePageState();
 }
@@ -13,26 +23,39 @@ class _HomePageState extends State<HomePage> {
   final TextEditingController textController3 = TextEditingController();
   final TextEditingController textController4 = TextEditingController();
 
+
   double costSliderValue = 0.3; // 비용 슬라이더의 기본 값
   double prioritySliderValue = 0.3; // 우선항목 슬라이더의 기본 값
   double foodSliderValue = 0.4; // 먹거리 슬라이더의 기본 값
-
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('여행 정보 입력'),
+        title: const Text(
+          '여행 정보 입력',
+          style: TextStyle(fontSize: 24.0, fontWeight: FontWeight.bold),
+        ),
+        centerTitle: true,
+        backgroundColor: const Color(0xFFC5DDFF),
       ),
       body: SingleChildScrollView(
         child: Padding(
-          padding: EdgeInsets.all(16.0),
+          padding: const EdgeInsets.all(16.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               TextField(
                 controller: textController1,
-                decoration: const InputDecoration(labelText: '장소'),
+                decoration: InputDecoration(
+                  labelText: '장소',
+                  contentPadding: const EdgeInsets.all(16.0),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8.0),
+                  ),
+                ),
               ),
+              const SizedBox(height: 16.0),
               Row(
                 children: [
                   Expanded(
@@ -41,30 +64,40 @@ class _HomePageState extends State<HomePage> {
                         _selectDate(context, isStartDate: true);
                       },
                       child: InputDecorator(
-                        decoration: const InputDecoration(
+                        decoration: InputDecoration(
                           labelText: '출발 날짜',
+                          contentPadding: const EdgeInsets.all(16.0),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8.0),
+                          ),
                         ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: <Widget>[
                             Text(
                               "${startDate.toLocal()}".split(' ')[0],
+                              style: const TextStyle(fontSize: 16.0),
                             ),
-                            Icon(Icons.calendar_today),
+                            const Icon(Icons.calendar_today, size: 20.0),
                           ],
                         ),
                       ),
                     ),
                   ),
-                  SizedBox(width: 8.0),
+                  const SizedBox(width: 8.0),
                   Expanded(
                     child: InkWell(
                       onTap: () {
                         _selectDate(context, isStartDate: false);
                       },
                       child: InputDecorator(
-                        decoration: const InputDecoration(
+
+                        decoration: InputDecoration(
                           labelText: '복귀 날짜',
+                          contentPadding: const EdgeInsets.all(16.0),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8.0),
+                          ),
                         ),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -144,25 +177,27 @@ class _HomePageState extends State<HomePage> {
                         text2: "시작: ${startDate.toLocal()} 종료: ${endDate.toLocal()}",
                         text3: textController3.text,
                         text4: textController4.text,
-                        costSliderValue: costSliderValue,
-                        prioritySliderValue: prioritySliderValue,
-                        foodSliderValue: foodSliderValue,
+
                       ),
                     ),
                   );
                 },
-                child: const Text('여행 추천'),
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 16.0), backgroundColor: const Color(0xFFC5DDFF),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8.0),
+                  ), // 새로운 테마 컬러
+                ),
+                child: const Text(
+                  '여행 추천',
+                  style: TextStyle(fontSize: 18.0),
+                ),
               ),
             ],
           ),
         ),
       ),
     );
-  }
-
-  double _clampValue(double value) {
-    // Ensure the value is between 0 and 1
-    return value.clamp(0.0, 1.0);
   }
 
   Future<void> _selectDate(BuildContext context, {required bool isStartDate}) async {

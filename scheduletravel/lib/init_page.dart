@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'input_page.dart';
 
@@ -28,7 +30,8 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   Future<void> _navigateToHomePage() async {
-    await Future.delayed(Duration(seconds: 3));
+    await Future.delayed(const Duration(seconds: 3));
+    
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
@@ -40,7 +43,7 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFFC5DDFF),
+      backgroundColor: const Color(0xFFC5DDFF),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,

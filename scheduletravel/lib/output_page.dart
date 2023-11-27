@@ -14,7 +14,7 @@ class OutputPage extends StatefulWidget {
   final double prioritySliderValue;
   final double foodSliderValue;
 
-  OutputPage({
+  const OutputPage({super.key,
     required this.text1,
     required this.text2,
     required this.text3,
@@ -59,6 +59,7 @@ class _OutputPageState extends State<OutputPage> {
     this.prioritySliderValue = prioritySliderValue;
     this.foodSliderValue = foodSliderValue;
   }
+
   @override
   void initState() {
     super.initState();
@@ -78,8 +79,8 @@ class _OutputPageState extends State<OutputPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: const Color(0xff69665d),
-        leading: const Icon(Icons.list, color: Color(0xffc4a031), size: 37),
+        backgroundColor: const Color(0xFFC5DDFF),
+        leading: const Icon(Icons.list, size: 37),
         title: Text.rich(
           TextSpan(
             children: <TextSpan>[
@@ -100,7 +101,7 @@ class _OutputPageState extends State<OutputPage> {
         ),
         centerTitle: true,
         actions: const [
-          Icon(Icons.manage_accounts, color: Color(0xffc4a031), size: 37),
+          Icon(Icons.manage_accounts, size: 37),
         ],
       ),
       body: SingleChildScrollView(
@@ -207,8 +208,13 @@ class _OutputPageState extends State<OutputPage> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            Text(groupKey, style: TextStyle(fontWeight: FontWeight.bold)),
-            ...plans.map((plan) => Text('  $plan')),
+            Text(groupKey, style: const TextStyle(fontWeight: FontWeight.bold)),
+            ...plans.map((plan) => Text(
+                '  $plan',
+              style: const TextStyle(fontSize: 14),
+              softWrap: true,
+              )
+            ),
           ],
         );
       }).toList(),
