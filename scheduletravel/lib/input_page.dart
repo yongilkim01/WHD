@@ -20,10 +20,9 @@ class _HomePageState extends State<HomePage> {
   final TextEditingController textController1 = TextEditingController();
   DateTime startDate = DateTime.now();
   DateTime endDate = DateTime.now();
+  int selectedMaxPlaces = 1;
   final TextEditingController textController3 = TextEditingController();
   final TextEditingController textController4 = TextEditingController();
-
-
   double costSliderValue = 0.3; // 비용 슬라이더의 기본 값
   double prioritySliderValue = 0.3; // 우선항목 슬라이더의 기본 값
   double foodSliderValue = 0.4; // 먹거리 슬라이더의 기본 값
@@ -105,7 +104,7 @@ class _HomePageState extends State<HomePage> {
                             Text(
                               "${endDate.toLocal()}".split(' ')[0],
                             ),
-                            Icon(Icons.calendar_today),
+                            const Icon(Icons.calendar_today),
                           ],
                         ),
                       ),
@@ -113,60 +112,75 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ],
               ),
-              TextField(
-                controller: textController3,
-                decoration: const InputDecoration(labelText: '비용'),
+              const SizedBox(height: 16.0),
+              DropdownButtonFormField<int>(
+                value: selectedMaxPlaces,
+                onChanged: (value) {
+                  setState(() {
+                    selectedMaxPlaces = value!;
+                  });
+                },
+                items: List.generate(5, (index) {
+                  return DropdownMenuItem<int>(
+                    value: index + 1,
+                    child: Text('${index + 1}'),
+                  );
+                }),
+                decoration: InputDecoration(
+                  labelText: '일 최대 방문 장소 수',
+                  contentPadding: const EdgeInsets.all(16.0),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8.0),
+                  ),
+                ),
               ),
+              const SizedBox(height: 16.0),
+              const Text('비용'),
               // 비용 슬라이더
               Column(
                 children: [
-                  Text('비용: ${costSliderValue.toStringAsFixed(1)}'),
                   Slider(
                     value: costSliderValue,
                     onChanged: (value) {
                       setState(() {
                         costSliderValue = _clampValue(value);
+                        _adjustWeights();
                       });
                     },
                   ),
                 ],
               ),
-              TextField(
-                controller: textController4,
-                decoration: const InputDecoration(labelText: '관광'),
-              ),
+              const Text('관광'),
               // 우선항목 슬라이더
               Column(
                 children: [
-                  Text('관광: ${prioritySliderValue.toStringAsFixed(1)}'),
                   Slider(
                     value: prioritySliderValue,
                     onChanged: (value) {
                       setState(() {
                         prioritySliderValue = _clampValue(value);
+                        _adjustWeights();
                       });
                     },
                   ),
                 ],
               ),
               // 먹거리 슬라이더
-              TextField(
-                decoration: const InputDecoration(labelText: '먹거리'),
-              ),
+              const Text('먹거리'),
               Column(
                 children: [
-                  Text('먹거리: ${foodSliderValue.toStringAsFixed(1)}'),
                   Slider(
                     value: foodSliderValue,
                     onChanged: (value) {
                       setState(() {
                         foodSliderValue = _clampValue(value);
+                        _adjustWeights();
                       });
                     },
                   ),
                 ],
               ),
-              SizedBox(height: 16.0),
+              const SizedBox(height: 16.0),
               ElevatedButton(
                 onPressed: () {
                   Navigator.push(
@@ -176,14 +190,16 @@ class _HomePageState extends State<HomePage> {
                         text1: textController1.text,
                         text2: "시작: ${startDate.toLocal()} 종료: ${endDate.toLocal()}",
                         text3: textController3.text,
-                        text4: textController4.text,
-
+                        selectedMaxPlaces: selectedMaxPlaces,
+                        costSliderValue: costSliderValue,
+                        prioritySliderValue: prioritySliderValue,
+                        foodSliderValue: foodSliderValue
                       ),
                     ),
                   );
                 },
                 style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 16.0), backgroundColor: const Color(0xFFC5DDFF),
+                  padding: const EdgeInsets.symmetric(vertical: 16.0),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8.0),
                   ), // 새로운 테마 컬러
@@ -215,6 +231,32 @@ class _HomePageState extends State<HomePage> {
           endDate = picked;
         }
       });
+    }
+  }
+
+  double _clampValue(double value) {
+    const double minValue = 0.0;
+    const double maxValue = 1.0;
+
+    return value.clamp(minValue, maxValue);
+  }
+
+  void _adjustWeights() {
+    const double totalWeight = 1.0;
+
+    // 현재 각 슬라이더의 값
+    double currentCostWeight = costSliderValue;
+    double currentPriorityWeight = prioritySliderValue;
+    double currentFoodWeight = foodSliderValue;
+
+    // 현재 가중치의 합
+    double currentTotalWeight = currentCostWeight + currentPriorityWeight + currentFoodWeight;
+
+    // 합이 0이 아니면 각 슬라이더의 값을 조절하여 합이 1이 되도록 함
+    if (currentTotalWeight != 0) {
+      costSliderValue = (currentCostWeight / currentTotalWeight) * totalWeight;
+      prioritySliderValue = (currentPriorityWeight / currentTotalWeight) * totalWeight;
+      foodSliderValue = (currentFoodWeight / currentTotalWeight) * totalWeight;
     }
   }
 }
