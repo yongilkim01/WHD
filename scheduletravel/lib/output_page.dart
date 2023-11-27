@@ -10,7 +10,6 @@ import 'package:cached_network_image/cached_network_image.dart';
 
 class OutputPage extends StatefulWidget {
   final String text1, text2, text3;
-  final double costSliderValue;
   final double prioritySliderValue;
   final double foodSliderValue;
   final int selectedMaxPlaces;
@@ -20,7 +19,6 @@ class OutputPage extends StatefulWidget {
     required this.text2,
     required this.text3,
     required this.selectedMaxPlaces,
-    required this.costSliderValue,
     required this.prioritySliderValue,
     required this.foodSliderValue,
   });
@@ -31,7 +29,6 @@ class OutputPage extends StatefulWidget {
     text2: text2,
     text3: text3,
     selectedMaxPlaces: selectedMaxPlaces,
-    costSliderValue: costSliderValue,
     prioritySliderValue: prioritySliderValue,
     foodSliderValue: foodSliderValue,
   );
@@ -42,7 +39,6 @@ class _OutputPageState extends State<OutputPage> {
   List<Map<String, dynamic>> data = [];
   Random random = Random();
   int selectedMaxPlaces;
-  double costSliderValue;
   double prioritySliderValue;
   double foodSliderValue;
 
@@ -51,12 +47,10 @@ class _OutputPageState extends State<OutputPage> {
     required this.text2,
     required this.text3,
     required this.selectedMaxPlaces,
-    required this.costSliderValue,
     required this.prioritySliderValue,
     required this.foodSliderValue,
   }) : super() {
     // 필드 초기화를 생성자에서 수행
-    costSliderValue = costSliderValue;
     prioritySliderValue = prioritySliderValue;
     foodSliderValue = foodSliderValue;
   }

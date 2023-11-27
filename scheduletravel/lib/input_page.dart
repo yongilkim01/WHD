@@ -23,9 +23,8 @@ class _HomePageState extends State<HomePage> {
   int selectedMaxPlaces = 1;
   final TextEditingController textController3 = TextEditingController();
   final TextEditingController textController4 = TextEditingController();
-  double costSliderValue = 0.3; // 비용 슬라이더의 기본 값
-  double prioritySliderValue = 0.3; // 우선항목 슬라이더의 기본 값
-  double foodSliderValue = 0.4; // 먹거리 슬라이더의 기본 값
+  double prioritySliderValue = 0.5; // 우선항목 슬라이더의 기본 값
+  double foodSliderValue = 0.5; // 먹거리 슬라이더의 기본 값
   
   @override
   Widget build(BuildContext context) {
@@ -135,21 +134,17 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
               const SizedBox(height: 16.0),
-              const Text('비용'),
-              // 비용 슬라이더
-              Column(
-                children: [
-                  Slider(
-                    value: costSliderValue,
-                    onChanged: (value) {
-                      setState(() {
-                        costSliderValue = _clampValue(value);
-                        _adjustWeights();
-                      });
-                    },
+              TextField(
+                controller: textController3,
+                decoration: InputDecoration(
+                  labelText: '비용',
+                  contentPadding: const EdgeInsets.all(16.0),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8.0),
                   ),
-                ],
+                ),
               ),
+              const SizedBox(height: 8.0),
               const Text('관광'),
               // 우선항목 슬라이더
               Column(
@@ -191,7 +186,6 @@ class _HomePageState extends State<HomePage> {
                         text2: "시작: ${startDate.toLocal()} 종료: ${endDate.toLocal()}",
                         text3: textController3.text,
                         selectedMaxPlaces: selectedMaxPlaces,
-                        costSliderValue: costSliderValue,
                         prioritySliderValue: prioritySliderValue,
                         foodSliderValue: foodSliderValue
                       ),
@@ -244,17 +238,14 @@ class _HomePageState extends State<HomePage> {
   void _adjustWeights() {
     const double totalWeight = 1.0;
 
-    // 현재 각 슬라이더의 값
-    double currentCostWeight = costSliderValue;
     double currentPriorityWeight = prioritySliderValue;
     double currentFoodWeight = foodSliderValue;
 
     // 현재 가중치의 합
-    double currentTotalWeight = currentCostWeight + currentPriorityWeight + currentFoodWeight;
+    double currentTotalWeight = currentPriorityWeight + currentFoodWeight;
 
     // 합이 0이 아니면 각 슬라이더의 값을 조절하여 합이 1이 되도록 함
     if (currentTotalWeight != 0) {
-      costSliderValue = (currentCostWeight / currentTotalWeight) * totalWeight;
       prioritySliderValue = (currentPriorityWeight / currentTotalWeight) * totalWeight;
       foodSliderValue = (currentFoodWeight / currentTotalWeight) * totalWeight;
     }
