@@ -23,6 +23,11 @@ class _HomePageState extends State<HomePage> {
   final TextEditingController textController3 = TextEditingController();
   final TextEditingController textController4 = TextEditingController();
 
+
+  double costSliderValue = 0.3; // 비용 슬라이더의 기본 값
+  double prioritySliderValue = 0.3; // 우선항목 슬라이더의 기본 값
+  double foodSliderValue = 0.4; // 먹거리 슬라이더의 기본 값
+  
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -86,6 +91,7 @@ class _HomePageState extends State<HomePage> {
                         _selectDate(context, isStartDate: false);
                       },
                       child: InputDecorator(
+
                         decoration: InputDecoration(
                           labelText: '복귀 날짜',
                           contentPadding: const EdgeInsets.all(16.0),
@@ -98,9 +104,8 @@ class _HomePageState extends State<HomePage> {
                           children: <Widget>[
                             Text(
                               "${endDate.toLocal()}".split(' ')[0],
-                              style: const TextStyle(fontSize: 16.0),
                             ),
-                            const Icon(Icons.calendar_today, size: 20.0),
+                            Icon(Icons.calendar_today),
                           ],
                         ),
                       ),
@@ -108,29 +113,60 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ],
               ),
-              const SizedBox(height: 16.0),
               TextField(
                 controller: textController3,
-                decoration: InputDecoration(
-                  labelText: '비용',
-                  contentPadding: const EdgeInsets.all(16.0),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8.0),
-                  ),
-                ),
+                decoration: const InputDecoration(labelText: '비용'),
               ),
-              const SizedBox(height: 16.0),
+              // 비용 슬라이더
+              Column(
+                children: [
+                  Text('비용: ${costSliderValue.toStringAsFixed(1)}'),
+                  Slider(
+                    value: costSliderValue,
+                    onChanged: (value) {
+                      setState(() {
+                        costSliderValue = _clampValue(value);
+                      });
+                    },
+                  ),
+                ],
+              ),
               TextField(
                 controller: textController4,
-                decoration: InputDecoration(
-                  labelText: '우선항목',
-                  contentPadding: const EdgeInsets.all(16.0),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(8.0),
-                  ),
-                ),
+                decoration: const InputDecoration(labelText: '관광'),
               ),
-              const SizedBox(height: 24.0),
+              // 우선항목 슬라이더
+              Column(
+                children: [
+                  Text('관광: ${prioritySliderValue.toStringAsFixed(1)}'),
+                  Slider(
+                    value: prioritySliderValue,
+                    onChanged: (value) {
+                      setState(() {
+                        prioritySliderValue = _clampValue(value);
+                      });
+                    },
+                  ),
+                ],
+              ),
+              // 먹거리 슬라이더
+              TextField(
+                decoration: const InputDecoration(labelText: '먹거리'),
+              ),
+              Column(
+                children: [
+                  Text('먹거리: ${foodSliderValue.toStringAsFixed(1)}'),
+                  Slider(
+                    value: foodSliderValue,
+                    onChanged: (value) {
+                      setState(() {
+                        foodSliderValue = _clampValue(value);
+                      });
+                    },
+                  ),
+                ],
+              ),
+              SizedBox(height: 16.0),
               ElevatedButton(
                 onPressed: () {
                   Navigator.push(
@@ -141,6 +177,7 @@ class _HomePageState extends State<HomePage> {
                         text2: "시작: ${startDate.toLocal()} 종료: ${endDate.toLocal()}",
                         text3: textController3.text,
                         text4: textController4.text,
+
                       ),
                     ),
                   );

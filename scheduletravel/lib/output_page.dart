@@ -10,12 +10,18 @@ import 'package:cached_network_image/cached_network_image.dart';
 
 class OutputPage extends StatefulWidget {
   final String text1, text2, text3, text4;
+  final double costSliderValue;
+  final double prioritySliderValue;
+  final double foodSliderValue;
 
   const OutputPage({super.key,
     required this.text1,
     required this.text2,
     required this.text3,
     required this.text4,
+    required this.costSliderValue,
+    required this.prioritySliderValue,
+    required this.foodSliderValue,
   });
 
   @override
@@ -24,6 +30,9 @@ class OutputPage extends StatefulWidget {
     text2: text2,
     text3: text3,
     text4: text4,
+    costSliderValue: costSliderValue,
+    prioritySliderValue: prioritySliderValue,
+    foodSliderValue: foodSliderValue,
   );
 }
 
@@ -32,12 +41,24 @@ class _OutputPageState extends State<OutputPage> {
   List<Map<String, dynamic>> data = [];
   Random random = Random();
 
+  double costSliderValue;
+  double prioritySliderValue;
+  double foodSliderValue;
+
   _OutputPageState({
     required this.text1,
     required this.text2,
     required this.text3,
     required this.text4,
-  });
+    required this.costSliderValue,
+    required this.prioritySliderValue,
+    required this.foodSliderValue,
+  }) : super() {
+    // 필드 초기화를 생성자에서 수행
+    this.costSliderValue = costSliderValue;
+    this.prioritySliderValue = prioritySliderValue;
+    this.foodSliderValue = foodSliderValue;
+  }
 
   @override
   void initState() {
@@ -145,6 +166,7 @@ class _OutputPageState extends State<OutputPage> {
 
       return validImageUrls;
     } catch (e) {
+      print('이미지 로딩 중 오류 발생: $e');
       return [];
     }
   }
@@ -161,7 +183,7 @@ class _OutputPageState extends State<OutputPage> {
   Widget buildPlanList() {
     Map<String, List<String>> groupedPlans = {};
 
-    for (var item in data) {
+    data.forEach((item) {
       final String date = item['date'] ?? 'No Date';
       final String time = item['time'] ?? 'No Time';
       final String plan = item['plan'] ?? 'No Plan';
@@ -175,7 +197,7 @@ class _OutputPageState extends State<OutputPage> {
       } else {
         groupedPlans[groupKey] = [planText];
       }
-    }
+    });
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
