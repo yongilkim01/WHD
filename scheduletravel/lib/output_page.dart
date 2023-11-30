@@ -9,19 +9,22 @@ import 'package:http/http.dart' as http;
 import 'package:cached_network_image/cached_network_image.dart';
 
 class OutputPage extends StatefulWidget {
-  final String text1, text2, text3, text4;
-  final double costSliderValue;
+  final String text1, text2, text3;
   final double prioritySliderValue;
   final double foodSliderValue;
+  final double shoppingSliderValue;
+  final double restSliderValue;
+  final int selectedMaxPlaces;
 
-  OutputPage({
+  const OutputPage({super.key,
     required this.text1,
     required this.text2,
     required this.text3,
-    required this.text4,
-    required this.costSliderValue,
+    required this.selectedMaxPlaces,
     required this.prioritySliderValue,
     required this.foodSliderValue,
+    required this.shoppingSliderValue,
+    required this.restSliderValue
   });
 
   @override
@@ -29,36 +32,41 @@ class OutputPage extends StatefulWidget {
     text1: text1,
     text2: text2,
     text3: text3,
-    text4: text4,
-    costSliderValue: costSliderValue,
+    selectedMaxPlaces: selectedMaxPlaces,
     prioritySliderValue: prioritySliderValue,
     foodSliderValue: foodSliderValue,
+    shoppingSliderValue: shoppingSliderValue,
+    restSliderValue: restSliderValue,
   );
 }
 
 class _OutputPageState extends State<OutputPage> {
-  final String text1, text2, text3, text4;
+  final String text1, text2, text3;
   List<Map<String, dynamic>> data = [];
   Random random = Random();
-
-  double costSliderValue;
+  int selectedMaxPlaces;
   double prioritySliderValue;
   double foodSliderValue;
+  double shoppingSliderValue;
+  double restSliderValue;
 
   _OutputPageState({
     required this.text1,
     required this.text2,
     required this.text3,
-    required this.text4,
-    required this.costSliderValue,
+    required this.selectedMaxPlaces,
     required this.prioritySliderValue,
     required this.foodSliderValue,
+    required this.shoppingSliderValue,
+    required this.restSliderValue
   }) : super() {
     // 필드 초기화를 생성자에서 수행
-    this.costSliderValue = costSliderValue;
-    this.prioritySliderValue = prioritySliderValue;
-    this.foodSliderValue = foodSliderValue;
+    prioritySliderValue = prioritySliderValue;
+    foodSliderValue = foodSliderValue;
+    shoppingSliderValue = shoppingSliderValue;
+    restSliderValue = restSliderValue;
   }
+
   @override
   void initState() {
     super.initState();
@@ -78,8 +86,8 @@ class _OutputPageState extends State<OutputPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: const Color(0xff69665d),
-        leading: const Icon(Icons.list, color: Color(0xffc4a031), size: 37),
+        backgroundColor: const Color(0xFFC5DDFF),
+        leading: const Icon(Icons.list, size: 37),
         title: Text.rich(
           TextSpan(
             children: <TextSpan>[
@@ -100,7 +108,7 @@ class _OutputPageState extends State<OutputPage> {
         ),
         centerTitle: true,
         actions: const [
-          Icon(Icons.manage_accounts, color: Color(0xffc4a031), size: 37),
+          Icon(Icons.manage_accounts, size: 37),
         ],
       ),
       body: SingleChildScrollView(
@@ -126,10 +134,23 @@ class _OutputPageState extends State<OutputPage> {
                     shrinkWrap: true,
                     itemCount: min(imageUrls.length, 4),
                     itemBuilder: (context, index) {
-                      return CachedNetworkImage(
-                        imageUrl: imageUrls[index],
-                        placeholder: (context, url) => const CircularProgressIndicator(),
-                        errorWidget: (context, url, error) => const Icon(Icons.warning),
+                      return Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(8.0),
+                          child: CachedNetworkImage(
+                            imageUrl: imageUrls[index],
+                            placeholder: (context, url) => Container(
+                              color: Colors.grey[300],
+                              child: const Center(child: CircularProgressIndicator()),
+                            ),
+                            errorWidget: (context, url, error) => Container(
+                              color: Colors.grey[300],
+                              child: const Center(child: Icon(Icons.warning, color: Colors.red)),
+                            ),
+                            fit: BoxFit.cover,
+                          ),
+                        ),
                       );
                     },
                   );
@@ -137,6 +158,7 @@ class _OutputPageState extends State<OutputPage> {
               },
             ),
             Text("위는 $text1의 유명한 명소들의 사진입니다.", style: const TextStyle(fontSize: 13)),
+            const SizedBox(height: 8.0,),
             buildPlanList(),
           ],
         ),
@@ -207,8 +229,13 @@ class _OutputPageState extends State<OutputPage> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            Text(groupKey, style: TextStyle(fontWeight: FontWeight.bold)),
-            ...plans.map((plan) => Text('  $plan')),
+            Text(groupKey, style: const TextStyle(fontWeight: FontWeight.bold)),
+            ...plans.map((plan) => Text(
+              '  $plan',
+              style: const TextStyle(fontSize: 14),
+              softWrap: true,
+            )
+            ),
           ],
         );
       }).toList(),
