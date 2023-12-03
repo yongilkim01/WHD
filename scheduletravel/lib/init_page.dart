@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'input_page.dart';
 
@@ -29,7 +31,6 @@ class _SplashScreenState extends State<SplashScreen> {
 
   Future<void> _navigateToHomePage() async {
     await Future.delayed(const Duration(seconds: 3));
-
     Navigator.pushReplacement(
       context,
       MaterialPageRoute(
