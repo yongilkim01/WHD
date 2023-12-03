@@ -1,13 +1,10 @@
 // ignore_for_file: library_private_types_in_public_api
 
 import 'package:flutter/material.dart';
-import 'output_page.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
-void main() {
-  runApp(const MaterialApp(
-    home: HomePage(),
-  ));
-}
+import 'output_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -178,16 +175,16 @@ class _HomePageState extends State<HomePage> {
               const SizedBox(height: 16.0),
               ElevatedButton(
                 onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
+                  String test_question = "Hi chat GPT";
+                  Navigator.push(context, MaterialPageRoute(
                       builder: (context) => OutputPage(
                         text1: textController1.text,
                         text2: "시작: ${startDate.toLocal()} 종료: ${endDate.toLocal()}",
                         text3: textController3.text,
                         selectedMaxPlaces: selectedMaxPlaces,
                         prioritySliderValue: prioritySliderValue,
-                        foodSliderValue: foodSliderValue
+                        foodSliderValue: foodSliderValue,
+                        questionValue : test_question
                       ),
                     ),
                   );

@@ -1,6 +1,6 @@
-# whd
+# 원호당(원래는 호구 당할뻔)
 
-A new Flutter project.
+원호당은 chatGPT API를 사용한 여행 추천 어플리케이션으로 flutter 를 사용하여 만들어졌다.
 
 ## Getting Started
 

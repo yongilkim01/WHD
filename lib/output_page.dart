@@ -1,5 +1,3 @@
-// ignore_for_file: library_private_types_in_public_api, no_logic_in_create_state
-
 import 'dart:math';
 import 'dart:convert';
 import 'dart:async';
@@ -8,8 +6,31 @@ import 'package:flutter/services.dart' show rootBundle;
 import 'package:http/http.dart' as http;
 import 'package:cached_network_image/cached_network_image.dart';
 
+Future<String> generateText(String prompt) async {
+  String apiKey = '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';
+  String apiUrl = 'https://api.openai.com/v1/completions';
+
+  final response = await http.post(
+    Uri.parse(apiUrl),
+    headers: {'Content-Type': 'application/json','Authorization': 'Bearer $apiKey'},
+    body: jsonEncode({
+      "model": "text-davinci-003",
+      'prompt': prompt,
+      'max_tokens': 1000,
+      'temperature': 0,
+      'top_p': 1,
+      'frequency_penalty': 0,
+      'presence_penalty': 0
+    }),
+  );
+
+  Map<String, dynamic> newresponse = jsonDecode(utf8.decode(response.bodyBytes));
+
+  return newresponse['choices'][0]['text'];
+}
+
 class OutputPage extends StatefulWidget {
-  final String text1, text2, text3;
+  final String text1, text2, text3, questionValue;
   final double prioritySliderValue;
   final double foodSliderValue;
   final int selectedMaxPlaces;
@@ -21,6 +42,7 @@ class OutputPage extends StatefulWidget {
     required this.selectedMaxPlaces,
     required this.prioritySliderValue,
     required this.foodSliderValue,
+    required this.questionValue,
   });
 
   @override
@@ -31,11 +53,12 @@ class OutputPage extends StatefulWidget {
     selectedMaxPlaces: selectedMaxPlaces,
     prioritySliderValue: prioritySliderValue,
     foodSliderValue: foodSliderValue,
+    questionValue: questionValue
   );
 }
 
 class _OutputPageState extends State<OutputPage> {
-  final String text1, text2, text3;
+  final String text1, text2, text3, questionValue;
   List<Map<String, dynamic>> data = [];
   Random random = Random();
   int selectedMaxPlaces;
@@ -49,6 +72,7 @@ class _OutputPageState extends State<OutputPage> {
     required this.selectedMaxPlaces,
     required this.prioritySliderValue,
     required this.foodSliderValue,
+    required this.questionValue,
   }) : super() {
     // 필드 초기화를 생성자에서 수행
     prioritySliderValue = prioritySliderValue;
@@ -74,7 +98,7 @@ class _OutputPageState extends State<OutputPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: const Color(0xFFC5DDFF),
+        backgroundColor: const Color(0xFF00000),
         leading: const Icon(Icons.list, size: 37),
         title: Text.rich(
           TextSpan(
@@ -146,6 +170,19 @@ class _OutputPageState extends State<OutputPage> {
               },
             ),
             Text("위는 $text1의 유명한 명소들의 사진입니다.", style: const TextStyle(fontSize: 13)),
+            FutureBuilder<String>(
+              future: generateText(questionValue),
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                } else if (snapshot.hasError) {
+                  return Text('Error: ${snapshot.error}');
+                } else {
+                  return Text('${snapshot.data}', style: const TextStyle(fontSize: 13));
+                }
+              },
+            ),
+
             const SizedBox(height: 8.0,),
             buildPlanList(),
           ],
