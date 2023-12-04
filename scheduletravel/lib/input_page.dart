@@ -197,7 +197,7 @@ class _HomePageState extends State<HomePage> {
                       const Text('(높음)'),
                     ],
                   ),
-                ),
+                ]
               ),
               const SizedBox(height: 8.0),
               const Text(

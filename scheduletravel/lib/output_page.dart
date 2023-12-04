@@ -66,6 +66,7 @@ class OutputPage extends StatefulWidget {
 class _OutputPageState extends State<OutputPage> {
   final String text1, text2, text3, questionValue;
   List<Map<String, dynamic>> data = [];
+  List<String> queries = [];
   Random random = Random();
   int selectedMaxPlaces;
   double prioritySliderValue;
@@ -104,6 +105,13 @@ class _OutputPageState extends State<OutputPage> {
     setState(() {
       data = List<Map<String, dynamic>>.from(jsonList);
     });
+
+    for (Map<String, dynamic> item in data) {
+      String keyword = item['keyword'] as String;
+      if (keyword != 'x') {
+        queries.add("$text1 $keyword");
+      }
+    }
   }
 
   @override
@@ -139,7 +147,7 @@ class _OutputPageState extends State<OutputPage> {
         child: Column(
           children: <Widget>[
             FutureBuilder<List<String>>(
-              future: getImageUrls("$text1 관광명소"),
+              future: getImageUrls(queries),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const CircularProgressIndicator();
@@ -194,6 +202,7 @@ class _OutputPageState extends State<OutputPage> {
                 }
               },
             ),
+
             const SizedBox(height: 8.0,),
             buildPlanList(),
           ],
@@ -202,31 +211,41 @@ class _OutputPageState extends State<OutputPage> {
     );
   }
 
-  Future<List<String>> getImageUrls(String query) async {
+  Future<List<String>> getImageUrls(List<String> queries) async {
     const String apiKey = 'AIzaSyBW2byc3ChYykgo61BH8TFbuao56TyNPBs';
     const String cx = 'a378f93229fc3407b';
-    final String endpoint = 'https://www.googleapis.com/customsearch/v1?q=$query&cx=$cx&key=$apiKey&searchType=image&num=10';
 
-    try {
-      final response = await http.get(Uri.parse(endpoint));
-      final Map<String, dynamic> jsonResponse = json.decode(response.body);
-      final List<dynamic> items = jsonResponse['items'];
+    List<String> allImageUrls = [];
 
-      List<String> validImageUrls = [];
+    for (String query in queries) {
+      final String endpoint = 'https://www.googleapis.com/customsearch/v1?q=$query&cx=$cx&key=$apiKey&searchType=image&num=8';
 
-      for (var item in items) {
-        final String imageUrl = item['link'];
-        if (await _isValidImageUrl(imageUrl)) {
-          validImageUrls.add(imageUrl);
+      try {
+        final response = await http.get(Uri.parse(endpoint));
+        final Map<String, dynamic> jsonResponse = json.decode(response.body);
+        final List<dynamic> items = jsonResponse['items'];
+
+        List<String> validImageUrls = [];
+
+        for (var item in items) {
+          final String imageUrl = item['link'];
+          if (await _isValidImageUrl(imageUrl)) {
+            validImageUrls.add(imageUrl);
+          }
         }
-      }
 
-      return validImageUrls;
-    } catch (e) {
-      print('이미지 로딩 중 오류 발생: $e');
-      return [];
+        // 선정된 유효한 URL 중 하나를 선택 (첫 번째 항목)
+        if (validImageUrls.isNotEmpty) {
+          allImageUrls.add(validImageUrls[0]);
+        }
+      } catch (e) {
+        print('이미지 로딩 중 오류 발생: $e');
+      }
     }
+
+    return allImageUrls;
   }
+
 
   Future<bool> _isValidImageUrl(String imageUrl) async {
     try {
