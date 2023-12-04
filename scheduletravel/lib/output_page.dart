@@ -194,7 +194,6 @@ class _OutputPageState extends State<OutputPage> {
                 }
               },
             ),
-
             const SizedBox(height: 8.0,),
             buildPlanList(),
           ],

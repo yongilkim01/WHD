@@ -1,7 +1,15 @@
+// ignore_for_file: library_private_types_in_public_api
+
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'output_page.dart';
+
+void main() {
+  runApp(const MaterialApp(
+    home: HomePage(),
+  ));
+}
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -15,6 +23,7 @@ class _HomePageState extends State<HomePage> {
   DateTime startDate = DateTime.now();
   DateTime endDate = DateTime.now();
   int selectedMaxPlaces = 1;
+
   late TextEditingController textController3 = TextEditingController();
   final TextEditingController textController4 = TextEditingController();
   double prioritySliderValue = 0.25;
@@ -41,6 +50,7 @@ class _HomePageState extends State<HomePage> {
   void _updateButtonColor() {
     setState(() {}); // 입력 필드 변경 감지 시 상태를 업데이트하여 리렌더링 유도
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -187,7 +197,7 @@ class _HomePageState extends State<HomePage> {
                       const Text('(높음)'),
                     ],
                   ),
-                ],
+                ),
               ),
               const SizedBox(height: 8.0),
               const Text(
@@ -303,6 +313,7 @@ class _HomePageState extends State<HomePage> {
                   );
                 }
                     : null,
+
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16.0),
                   shape: RoundedRectangleBorder(
@@ -310,6 +321,7 @@ class _HomePageState extends State<HomePage> {
                   ),
                   backgroundColor:
                   _isInputValid() ? const Color(0xFFB3E5FC) : Colors.grey,
+
                 ),
                 child: const Text(
                   '여행 추천',
@@ -371,3 +383,4 @@ class _HomePageState extends State<HomePage> {
     return textController1.text.isNotEmpty && textController3.text.isNotEmpty;
   }
 }
+
