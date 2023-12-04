@@ -1,6 +1,8 @@
 // ignore_for_file: library_private_types_in_public_api
 
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 import 'output_page.dart';
 
 void main() {
@@ -17,15 +19,39 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  final TextEditingController textController1 = TextEditingController();
+  late TextEditingController textController1 = TextEditingController();
   DateTime startDate = DateTime.now();
   DateTime endDate = DateTime.now();
   int selectedMaxPlaces = 1;
-  final TextEditingController textController3 = TextEditingController();
+
+  late TextEditingController textController3 = TextEditingController();
   final TextEditingController textController4 = TextEditingController();
-  double prioritySliderValue = 0.5; // 우선항목 슬라이더의 기본 값
-  double foodSliderValue = 0.5; // 먹거리 슬라이더의 기본 값
-  
+  double prioritySliderValue = 0.25;
+  double foodSliderValue = 0.25;
+  double shoppingSliderValue = 0.25;
+  double restSliderValue = 0.25;
+
+  @override
+  void initState() {
+    super.initState();
+    textController1 = TextEditingController();
+    textController3 = TextEditingController();
+    textController1.addListener(_updateButtonColor);
+    textController3.addListener(_updateButtonColor);
+  }
+
+  @override
+  void dispose() {
+    textController1.dispose();
+    textController3.dispose();
+    super.dispose();
+  }
+
+  void _updateButtonColor() {
+    setState(() {}); // 입력 필드 변경 감지 시 상태를 업데이트하여 리렌더링 유도
+  }
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -89,7 +115,6 @@ class _HomePageState extends State<HomePage> {
                         _selectDate(context, isStartDate: false);
                       },
                       child: InputDecorator(
-
                         decoration: InputDecoration(
                           labelText: '복귀 날짜',
                           contentPadding: const EdgeInsets.all(16.0),
@@ -145,58 +170,158 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
               const SizedBox(height: 8.0),
-              const Text('관광'),
-              // 우선항목 슬라이더
+              const Text(
+                '휴양',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16.0,
+                  color: Colors.black,
+                ),
+              ),
               Column(
                 children: [
-                  Slider(
-                    value: prioritySliderValue,
-                    onChanged: (value) {
-                      setState(() {
-                        prioritySliderValue = _clampValue(value);
-                        _adjustWeights();
-                      });
-                    },
+                  Row(
+                    children: [
+                      const Text('(낮음)'),
+                      Expanded(
+                        child: Slider(
+                          value: restSliderValue,
+                          onChanged: (value) {
+                            setState(() {
+                              restSliderValue = _clampValue(value);
+                              _adjustWeights();
+                            });
+                          },
+                        ),
+                      ),
+                      const Text('(높음)'),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8.0),
+              const Text(
+                '관광',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16.0,
+                  color: Colors.black,
+                ),
+              ),
+              Column(
+                children: [
+                  Row(
+                    children: [
+                      const Text('(낮음)'),
+                      Expanded(
+                        child: Slider(
+                          value: prioritySliderValue,
+                          onChanged: (value) {
+                            setState(() {
+                              prioritySliderValue = _clampValue(value);
+                              _adjustWeights();
+                            });
+                          },
+                        ),
+                      ),
+                      const Text('(높음)'),
+                    ],
                   ),
                 ],
               ),
-              // 먹거리 슬라이더
-              const Text('먹거리'),
+              const SizedBox(height: 8.0),
+              const Text(
+                '먹거리',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16.0,
+                  color: Colors.black,
+                ),
+              ),
               Column(
                 children: [
-                  Slider(
-                    value: foodSliderValue,
-                    onChanged: (value) {
-                      setState(() {
-                        foodSliderValue = _clampValue(value);
-                        _adjustWeights();
-                      });
-                    },
+                  Row(
+                    children: [
+                      const Text('(낮음)'),
+                      Expanded(
+                        child: Slider(
+                          value: foodSliderValue,
+                          onChanged: (value) {
+                            setState(() {
+                              foodSliderValue = _clampValue(value);
+                              _adjustWeights();
+                            });
+                          },
+                        ),
+                      ),
+                      const Text('(높음)'),
+                    ],
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8.0),
+              const Text(
+                '쇼핑',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16.0,
+                  color: Colors.black,
+                ),
+              ),
+              Column(
+                children: [
+                  Row(
+                    children: [
+                      const Text('(낮음)'),
+                      Expanded(
+                        child: Slider(
+                          value: shoppingSliderValue,
+                          onChanged: (value) {
+                            setState(() {
+                              shoppingSliderValue = _clampValue(value);
+                              _adjustWeights();
+                            });
+                          },
+                        ),
+                      ),
+                      const Text('(높음)'),
+                    ],
                   ),
                 ],
               ),
               const SizedBox(height: 16.0),
               ElevatedButton(
-                onPressed: () {
+                onPressed: _isInputValid()
+                    ? () {
+                  String test_question = "Hi chat GPT";
                   Navigator.push(
                     context,
                     MaterialPageRoute(
                       builder: (context) => OutputPage(
                         text1: textController1.text,
-                        text2: "시작: ${startDate.toLocal()} 종료: ${endDate.toLocal()}",
+                        text2:
+                        "시작: ${startDate.toLocal()} 종료: ${endDate.toLocal()}",
                         text3: textController3.text,
                         selectedMaxPlaces: selectedMaxPlaces,
                         prioritySliderValue: prioritySliderValue,
-                        foodSliderValue: foodSliderValue
+                        foodSliderValue: foodSliderValue,
+                        shoppingSliderValue: shoppingSliderValue,
+                        restSliderValue: restSliderValue,
+                        questionValue: test_question,
                       ),
                     ),
                   );
-                },
+                }
+                    : null,
+
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16.0),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8.0),
-                  ), // 새로운 테마 컬러
+                  ),
+                  backgroundColor:
+                  _isInputValid() ? const Color(0xFFB3E5FC) : Colors.grey,
+
                 ),
                 child: const Text(
                   '여행 추천',
@@ -240,14 +365,22 @@ class _HomePageState extends State<HomePage> {
 
     double currentPriorityWeight = prioritySliderValue;
     double currentFoodWeight = foodSliderValue;
+    double currentShoppingWeight = shoppingSliderValue;
+    double currentRestWeight = restSliderValue;
 
-    // 현재 가중치의 합
-    double currentTotalWeight = currentPriorityWeight + currentFoodWeight;
+    double currentTotalWeight =
+        currentPriorityWeight + currentFoodWeight + currentShoppingWeight + currentRestWeight;
 
-    // 합이 0이 아니면 각 슬라이더의 값을 조절하여 합이 1이 되도록 함
     if (currentTotalWeight != 0) {
       prioritySliderValue = (currentPriorityWeight / currentTotalWeight) * totalWeight;
       foodSliderValue = (currentFoodWeight / currentTotalWeight) * totalWeight;
+      shoppingSliderValue = (currentShoppingWeight / currentTotalWeight) * totalWeight;
+      restSliderValue = (currentRestWeight / currentTotalWeight) * totalWeight;
     }
   }
+
+  bool _isInputValid() {
+    return textController1.text.isNotEmpty && textController3.text.isNotEmpty;
+  }
 }
+
