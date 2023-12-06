@@ -5,29 +5,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:http/http.dart' as http;
 import 'package:cached_network_image/cached_network_image.dart';
+import 'dart:io';
+import 'dart:typed_data';
+import 'package:path_provider/path_provider.dart';
 
-Future<String> generateText(String prompt) async {
-  String apiKey = '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';
-  String apiUrl = 'https://api.openai.com/v1/completions';
 
-  final response = await http.post(
-    Uri.parse(apiUrl),
-    headers: {'Content-Type': 'application/json','Authorization': 'Bearer $apiKey'},
-    body: jsonEncode({
-      "model": "text-davinci-003",
-      'prompt': prompt,
-      'max_tokens': 1000,
-      'temperature': 0,
-      'top_p': 1,
-      'frequency_penalty': 0,
-      'presence_penalty': 0
-    }),
-  );
 
-  Map<String, dynamic> newresponse = jsonDecode(utf8.decode(response.bodyBytes));
-
-  return newresponse['choices'][0]['text'];
-}
 
 class OutputPage extends StatefulWidget {
   final String text1, text2, text3, questionValue;
@@ -98,7 +81,13 @@ class _OutputPageState extends State<OutputPage> {
   }
 
   Future<void> loadJsonData() async {
-    final String jsonString = await rootBundle.loadString('assets/data.json');
+    final String jsonString;
+    if(this.text1 == "대전")
+      jsonString = await rootBundle.loadString('assets/data1.json');
+    else if(this.text1 == "전주")
+      jsonString = await rootBundle.loadString('assets/data2.json');
+    else
+      jsonString = await rootBundle.loadString('assets/data3.json');
     final List<dynamic> jsonList = json.decode(jsonString);
 
     setState(() {
@@ -106,6 +95,32 @@ class _OutputPageState extends State<OutputPage> {
     });
   }
 
+  Future<void> generateText(String prompt) async {
+    String apiKey = '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';
+    String apiUrl = 'https://api.openai.com/v1/completions';
+
+      final response = await http.post(
+        Uri.parse(apiUrl),
+        headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer $apiKey'},
+        body: jsonEncode({
+          "model": "text-davinci-003",
+          'prompt': prompt,
+          'max_tokens': 3000,
+          'temperature': 0,
+          'top_p': 1,
+          'frequency_penalty': 0,
+          'presence_penalty': 0
+        }),
+      );
+      Map<String, dynamic> jsonResponse = jsonDecode(utf8.decode(response.bodyBytes));
+      String generatedText = jsonResponse['choices'][0]['text'];
+      List<dynamic> decodedData = jsonDecode(generatedText);
+      print(generatedText);
+      setState(() {
+        data = List<Map<String, dynamic>>.from(decodedData);
+      });
+
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -181,21 +196,9 @@ class _OutputPageState extends State<OutputPage> {
                 }
               },
             ),
-            Text("위는 $text1의 유명한 명소들의 사진입니다.", style: const TextStyle(fontSize: 13)),
-            FutureBuilder<String>(
-              future: generateText(questionValue),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                } else if (snapshot.hasError) {
-                  return Text('Error: ${snapshot.error}');
-                } else {
-                  return Text('${snapshot.data}', style: const TextStyle(fontSize: 13));
-                }
-              },
-            ),
+            Text("위는 $text1의 여행지 사진입니다.", style: const TextStyle(fontSize: 18,fontWeight: FontWeight.bold,color: Colors.blue)),
 
-            const SizedBox(height: 8.0,),
+            const SizedBox(height: 30.0,),
             buildPlanList(),
           ],
         ),
@@ -245,7 +248,7 @@ class _OutputPageState extends State<OutputPage> {
       final String date = item['date'] ?? 'No Date';
       final String time = item['time'] ?? 'No Time';
       final String plan = item['plan'] ?? 'No Plan';
-      final String theme = item['theme'] ?? 'No Theme';
+      final String theme = item['thema'] ?? 'No Thema';
 
       final String groupKey = '$date: $theme';
       final String planText = '$time: $plan';
@@ -266,13 +269,14 @@ class _OutputPageState extends State<OutputPage> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            Text(groupKey, style: const TextStyle(fontWeight: FontWeight.bold)),
+            Text(groupKey, style: const TextStyle(fontSize:15,fontWeight: FontWeight.bold)),
             ...plans.map((plan) => Text(
               '  $plan',
-              style: const TextStyle(fontSize: 14),
+              style: const TextStyle(fontSize: 16),
               softWrap: true,
-            )
             ),
+            ),
+            SizedBox(height: 15.0),
           ],
         );
       }).toList(),
