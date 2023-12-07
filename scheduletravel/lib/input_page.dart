@@ -1,15 +1,7 @@
-// ignore_for_file: library_private_types_in_public_api
-
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'output_page.dart';
-
-void main() {
-  runApp(const MaterialApp(
-    home: HomePage(),
-  ));
-}
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -19,12 +11,11 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  late TextEditingController textController1 = TextEditingController();
+  late TextEditingController textController1 = TextEditingController();//여행지
   DateTime startDate = DateTime.now();
   DateTime endDate = DateTime.now();
   int selectedMaxPlaces = 1;
-
-  late TextEditingController textController3 = TextEditingController();
+  late TextEditingController textController3 = TextEditingController();//비용
   final TextEditingController textController4 = TextEditingController();
   double prioritySliderValue = 0.25;
   double foodSliderValue = 0.25;
@@ -50,7 +41,6 @@ class _HomePageState extends State<HomePage> {
   void _updateButtonColor() {
     setState(() {}); // 입력 필드 변경 감지 시 상태를 업데이트하여 리렌더링 유도
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -162,7 +152,7 @@ class _HomePageState extends State<HomePage> {
               TextField(
                 controller: textController3,
                 decoration: InputDecoration(
-                  labelText: '비용',
+                  labelText: '비용(만원)',
                   contentPadding: const EdgeInsets.all(16.0),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(8.0),
@@ -189,7 +179,7 @@ class _HomePageState extends State<HomePage> {
                           onChanged: (value) {
                             setState(() {
                               restSliderValue = _clampValue(value);
-                              _adjustWeights();
+                            //  _adjustWeights();
                             });
                           },
                         ),
@@ -197,7 +187,7 @@ class _HomePageState extends State<HomePage> {
                       const Text('(높음)'),
                     ],
                   ),
-                ]
+                ],
               ),
               const SizedBox(height: 8.0),
               const Text(
@@ -219,7 +209,7 @@ class _HomePageState extends State<HomePage> {
                           onChanged: (value) {
                             setState(() {
                               prioritySliderValue = _clampValue(value);
-                              _adjustWeights();
+                              //_adjustWeights();
                             });
                           },
                         ),
@@ -249,7 +239,7 @@ class _HomePageState extends State<HomePage> {
                           onChanged: (value) {
                             setState(() {
                               foodSliderValue = _clampValue(value);
-                              _adjustWeights();
+                             // _adjustWeights();
                             });
                           },
                         ),
@@ -279,7 +269,7 @@ class _HomePageState extends State<HomePage> {
                           onChanged: (value) {
                             setState(() {
                               shoppingSliderValue = _clampValue(value);
-                              _adjustWeights();
+                             // _adjustWeights();
                             });
                           },
                         ),
@@ -293,7 +283,25 @@ class _HomePageState extends State<HomePage> {
               ElevatedButton(
                 onPressed: _isInputValid()
                     ? () {
-                  String test_question = "Hi chat GPT";
+                  String _twoDigits(int n) {
+                    if (n >= 10) {
+                      return "$n";
+                    } else {
+                      return "0$n";
+                    }
+                  }
+                  String formattedStartDate =
+                      "${startDate.year}-${_twoDigits(startDate.month)}-${_twoDigits(startDate.day)}";
+                  String formattedEndDate =
+                      "${endDate.year}-${_twoDigits(endDate.month)}-${_twoDigits(endDate.day)}";
+
+                  String test_question =
+                      "$formattedStartDate ~ $formattedEndDate "
+                      "까지 ${textController3.text}만원 이내로 ${textController1.text} "
+                      "여행을 갈건데 여행 스케쥴 추천 및 조율해줘 이 때 휴양은 ${restSliderValue.toStringAsFixed(1)}, 관광은 ${prioritySliderValue.toStringAsFixed(1)}, "
+                      "먹거리는 ${foodSliderValue.toStringAsFixed(1)}, 쇼핑은 ${shoppingSliderValue.toStringAsFixed(1)}의 값으로 고려하고 이중 가장 높은 값을 우선적으로 "
+                      "짜줘. 또한 하루마다 json갯수를 ${selectedMaxPlaces}개로 구성하고, 동일한 내용의 스케쥴은 만들지말고, 해당 스케쥴을 json 배열 형태로 출력하는데 date, theme, "
+                      "time, plan의 순서로 출력해줘. time은 (시:분) - (시:분) 형태로 출력해줘";
                   Navigator.push(
                     context,
                     MaterialPageRoute(
@@ -313,7 +321,6 @@ class _HomePageState extends State<HomePage> {
                   );
                 }
                     : null,
-
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 16.0),
                   shape: RoundedRectangleBorder(
@@ -321,7 +328,6 @@ class _HomePageState extends State<HomePage> {
                   ),
                   backgroundColor:
                   _isInputValid() ? const Color(0xFFB3E5FC) : Colors.grey,
-
                 ),
                 child: const Text(
                   '여행 추천',
@@ -383,4 +389,3 @@ class _HomePageState extends State<HomePage> {
     return textController1.text.isNotEmpty && textController3.text.isNotEmpty;
   }
 }
-

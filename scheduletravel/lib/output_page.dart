@@ -5,29 +5,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:http/http.dart' as http;
 import 'package:cached_network_image/cached_network_image.dart';
+import 'dart:io';
+import 'dart:typed_data';
+import 'package:path_provider/path_provider.dart';
 
-Future<String> generateText(String prompt) async {
-  String apiKey = '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';
-  String apiUrl = 'https://api.openai.com/v1/completions';
 
-  final response = await http.post(
-    Uri.parse(apiUrl),
-    headers: {'Content-Type': 'application/json','Authorization': 'Bearer $apiKey'},
-    body: jsonEncode({
-      "model": "text-davinci-003",
-      'prompt': prompt,
-      'max_tokens': 1000,
-      'temperature': 0,
-      'top_p': 1,
-      'frequency_penalty': 0,
-      'presence_penalty': 0
-    }),
-  );
 
-  Map<String, dynamic> newresponse = jsonDecode(utf8.decode(response.bodyBytes));
-
-  return newresponse['choices'][0]['text'];
-}
 
 class OutputPage extends StatefulWidget {
   final String text1, text2, text3, questionValue;
@@ -66,7 +49,6 @@ class OutputPage extends StatefulWidget {
 class _OutputPageState extends State<OutputPage> {
   final String text1, text2, text3, questionValue;
   List<Map<String, dynamic>> data = [];
-  List<String> queries = [];
   Random random = Random();
   int selectedMaxPlaces;
   double prioritySliderValue;
@@ -99,21 +81,46 @@ class _OutputPageState extends State<OutputPage> {
   }
 
   Future<void> loadJsonData() async {
-    final String jsonString = await rootBundle.loadString('assets/data.json');
+    final String jsonString;
+    if(this.text1 == "대전")
+      jsonString = await rootBundle.loadString('assets/data1.json');
+    else if(this.text1 == "전주")
+      jsonString = await rootBundle.loadString('assets/data2.json');
+    else
+      jsonString = await rootBundle.loadString('assets/data3.json');
     final List<dynamic> jsonList = json.decode(jsonString);
 
     setState(() {
       data = List<Map<String, dynamic>>.from(jsonList);
     });
-
-    for (Map<String, dynamic> item in data) {
-      String keyword = item['keyword'] as String;
-      if (keyword != 'x') {
-        queries.add("$text1 $keyword");
-      }
-    }
   }
 
+  Future<void> generateText(String prompt) async {
+    String apiKey = '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';
+    String apiUrl = 'https://api.openai.com/v1/completions';
+
+      final response = await http.post(
+        Uri.parse(apiUrl),
+        headers: {'Content-Type': 'application/json', 'Authorization': 'Bearer $apiKey'},
+        body: jsonEncode({
+          "model": "text-davinci-003",
+          'prompt': prompt,
+          'max_tokens': 3000,
+          'temperature': 0,
+          'top_p': 1,
+          'frequency_penalty': 0,
+          'presence_penalty': 0
+        }),
+      );
+      Map<String, dynamic> jsonResponse = jsonDecode(utf8.decode(response.bodyBytes));
+      String generatedText = jsonResponse['choices'][0]['text'];
+      List<dynamic> decodedData = jsonDecode(generatedText);
+      print(generatedText);
+      setState(() {
+        data = List<Map<String, dynamic>>.from(decodedData);
+      });
+
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -147,7 +154,7 @@ class _OutputPageState extends State<OutputPage> {
         child: Column(
           children: <Widget>[
             FutureBuilder<List<String>>(
-              future: getImageUrls(queries),
+              future: getImageUrls("$text1 관광명소"),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const CircularProgressIndicator();
@@ -189,21 +196,9 @@ class _OutputPageState extends State<OutputPage> {
                 }
               },
             ),
-            Text("위는 $text1의 유명한 명소들의 사진입니다.", style: const TextStyle(fontSize: 13)),
-            FutureBuilder<String>(
-              future: generateText(questionValue),
-              builder: (context, snapshot) {
-                if (snapshot.connectionState == ConnectionState.waiting) {
-                  return const Center(child: CircularProgressIndicator());
-                } else if (snapshot.hasError) {
-                  return Text('Error: ${snapshot.error}');
-                } else {
-                  return Text('${snapshot.data}', style: const TextStyle(fontSize: 13));
-                }
-              },
-            ),
+            Text("위는 $text1의 여행지 사진입니다.", style: const TextStyle(fontSize: 18,fontWeight: FontWeight.bold,color: Colors.blue)),
 
-            const SizedBox(height: 8.0,),
+            const SizedBox(height: 30.0,),
             buildPlanList(),
           ],
         ),
@@ -211,41 +206,31 @@ class _OutputPageState extends State<OutputPage> {
     );
   }
 
-  Future<List<String>> getImageUrls(List<String> queries) async {
+  Future<List<String>> getImageUrls(String query) async {
     const String apiKey = 'AIzaSyBW2byc3ChYykgo61BH8TFbuao56TyNPBs';
     const String cx = 'a378f93229fc3407b';
+    final String endpoint = 'https://www.googleapis.com/customsearch/v1?q=$query&cx=$cx&key=$apiKey&searchType=image&num=10';
 
-    List<String> allImageUrls = [];
+    try {
+      final response = await http.get(Uri.parse(endpoint));
+      final Map<String, dynamic> jsonResponse = json.decode(response.body);
+      final List<dynamic> items = jsonResponse['items'];
 
-    for (String query in queries) {
-      final String endpoint = 'https://www.googleapis.com/customsearch/v1?q=$query&cx=$cx&key=$apiKey&searchType=image&num=8';
+      List<String> validImageUrls = [];
 
-      try {
-        final response = await http.get(Uri.parse(endpoint));
-        final Map<String, dynamic> jsonResponse = json.decode(response.body);
-        final List<dynamic> items = jsonResponse['items'];
-
-        List<String> validImageUrls = [];
-
-        for (var item in items) {
-          final String imageUrl = item['link'];
-          if (await _isValidImageUrl(imageUrl)) {
-            validImageUrls.add(imageUrl);
-          }
+      for (var item in items) {
+        final String imageUrl = item['link'];
+        if (await _isValidImageUrl(imageUrl)) {
+          validImageUrls.add(imageUrl);
         }
-
-        // 선정된 유효한 URL 중 하나를 선택 (첫 번째 항목)
-        if (validImageUrls.isNotEmpty) {
-          allImageUrls.add(validImageUrls[0]);
-        }
-      } catch (e) {
-        print('이미지 로딩 중 오류 발생: $e');
       }
+
+      return validImageUrls;
+    } catch (e) {
+      print('이미지 로딩 중 오류 발생: $e');
+      return [];
     }
-
-    return allImageUrls;
   }
-
 
   Future<bool> _isValidImageUrl(String imageUrl) async {
     try {
@@ -263,7 +248,7 @@ class _OutputPageState extends State<OutputPage> {
       final String date = item['date'] ?? 'No Date';
       final String time = item['time'] ?? 'No Time';
       final String plan = item['plan'] ?? 'No Plan';
-      final String theme = item['theme'] ?? 'No Theme';
+      final String theme = item['thema'] ?? 'No Thema';
 
       final String groupKey = '$date: $theme';
       final String planText = '$time: $plan';
@@ -284,13 +269,14 @@ class _OutputPageState extends State<OutputPage> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            Text(groupKey, style: const TextStyle(fontWeight: FontWeight.bold)),
+            Text(groupKey, style: const TextStyle(fontSize:15,fontWeight: FontWeight.bold)),
             ...plans.map((plan) => Text(
               '  $plan',
-              style: const TextStyle(fontSize: 14),
+              style: const TextStyle(fontSize: 16),
               softWrap: true,
-            )
             ),
+            ),
+            SizedBox(height: 15.0),
           ],
         );
       }).toList(),
