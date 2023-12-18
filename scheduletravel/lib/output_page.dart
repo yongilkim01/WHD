@@ -77,17 +77,13 @@ class _OutputPageState extends State<OutputPage> {
   @override
   void initState() {
     super.initState();
-    loadJsonData();
+    //loadJsonData();
+    generateText(widget.questionValue);
   }
 
   Future<void> loadJsonData() async {
-    final String jsonString;
-    if(this.text1 == "대전")
-      jsonString = await rootBundle.loadString('assets/data1.json');
-    else if(this.text1 == "전주")
-      jsonString = await rootBundle.loadString('assets/data2.json');
-    else
-      jsonString = await rootBundle.loadString('assets/data3.json');
+    final String jsonString = "";
+
     final List<dynamic> jsonList = json.decode(jsonString);
 
     setState(() {
